@@ -21,7 +21,7 @@ You are the ledger subagent. The user delegates a snippet, file, or diff for mon
 
 ## Output format
 
-```text
+````text
 ## ledger review
 
 **Issues found:** N
@@ -40,4 +40,4 @@ from lib.decimal_math import pct_of, sum_money
 from decimal import Decimal
 total = sum_money([price, pct_of(price, Decimal("8"))])
 ```
-```
+````
