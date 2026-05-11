@@ -168,6 +168,28 @@ f:/projects/MaxExpressKit/
 - Mini-ledger companion stubbed: `skills/ledger-companion/` with a README +
   TODO pointing at future work.
 
+#### mek-status
+
+- Trigger: explicit `/mek-status` invocation only.
+- Output: human-readable summary printed to stdout:
+  - active guardrails (compliance / drift / ledger) with their strictness levels;
+  - source-app detection results from `lib/source_app_detect.py`;
+  - whether `mek.toml` and `.mek/drift-baseline.json` are present.
+- Exit code: `0` always. Diagnostic command; never fails the agent flow.
+
+#### mek-compliance-audit
+
+- Trigger: explicit `/mek-compliance-audit` invocation only.
+- Output: a markdown report listing each artifact in `compliance/`,
+  whether it's been updated within `compliance.staleness_days` (default
+  90), and any HITL approvals missing a counter-signature. Prints to
+  stdout; optional `--write report.md` flag for a file.
+- Exit code: `0` if all artifacts fresh and HITL approvals signed,
+  `1` if any artifact is stale or unsigned. Non-blocking by default in
+  CI (planner can wire `--soft` to coerce exit-0).
+- "Stale" definition: `mtime` older than `compliance.staleness_days` AND
+  no `last_reviewed:` frontmatter within that window.
+
 ### `/mek-init` payload (standard scope)
 
 ```text
@@ -188,7 +210,9 @@ Drift baseline & ledger helpers are NOT auto-scaffolded. Users invoke
 
 - `has_scorerift() -> bool` — checks `which scorerift` then `scorerift --version`.
 - `has_bookkeeper() -> bool` — checks for `bookkeeper` CLI on PATH.
-- `has_cosmictasha() -> dict` — probes localhost ports / API endpoint.
+- `has_cosmictasha() -> dict` — probes `localhost:3000/api/health`
+  (canonical CT default). Returns `{"present": bool, "url": str|None,
+  "version": str|None}`.
 
 Wrappers call these and degrade gracefully: if absent, fall back to the
 distilled Layer 1; if present, defer to the richer source app and pipe
@@ -268,6 +292,11 @@ updated by `/mek-drift accept`. Schema:
   }
 }
 ```
+
+Dimensions are determined by `preset`. The v0.1.0 `python` preset emits
+exactly the four shown above (`test_pass_rate`, `lint_score`, `coverage`,
+`security`). Future presets (JS/Go/Rust, v0.2.0) define their own
+dimension sets.
 
 Field semantics:
 
