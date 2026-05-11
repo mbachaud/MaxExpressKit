@@ -12,6 +12,11 @@ DEPLOY_RE = re.compile(
 )
 SCHEMA_FILE_RE = re.compile(r"(^|/)migrations/")
 MONEY_SQL_RE = re.compile(r"\b(INSERT|UPDATE|DELETE)\b.*\b(accounts|journal|ledger|amount|balance|debit|credit)\b", re.IGNORECASE)
+# `gh repo edit <repo> --visibility public|internal` — effectively irreversible due to
+# search-index/Wayback caching. `--visibility private` is the safe direction; not flagged.
+REPO_VISIBILITY_FLIP_RE = re.compile(
+    r"\bgh\s+repo\s+edit\b[^\n]*\s--visibility\s+(public|internal)\b"
+)
 
 
 def classify_risky_op(tool_name: str, tool_input: dict) -> str | None:
@@ -24,6 +29,8 @@ def classify_risky_op(tool_name: str, tool_input: dict) -> str | None:
             return "force_push_main"
         if DEPLOY_RE.search(cmd):
             return "deploy"
+        if REPO_VISIBILITY_FLIP_RE.search(cmd):
+            return "repo_visibility_flip"
         return None
 
     if tool_name in ("Edit", "Write", "MultiEdit"):

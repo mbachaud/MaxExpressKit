@@ -17,6 +17,7 @@ deploy = "warn"
 money_write = "warn"
 schema_migration = "warn"
 force_push_main = "warn"
+repo_visibility_flip = "warn"
 
 [drift]
 baseline_file = ".mek/drift-baseline.json"
