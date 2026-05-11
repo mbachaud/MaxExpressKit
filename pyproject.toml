@@ -3,12 +3,24 @@ name = "maxexpresskit"
 version = "0.1.2"
 description = "Three guardrails for Claude Code: compliance, drift, ledger."
 requires-python = ">=3.11"
-license = { text = "Apache-2.0" }
+license = "Apache-2.0"
+license-files = ["LICENSE"]
 authors = [{ name = "Max Bachaud", email = "maxbachaud@gmail.com" }]
 dependencies = [
     "pyyaml>=6.0.1",
     "tomli>=2.0.1; python_version < '3.11'",
 ]
+
+[build-system]
+requires = ["setuptools>=77.0.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+# Only `lib` is a real Python package. The other top-level dirs (hooks, agents,
+# skills, scaffold, commands) are plugin data — Claude Code reads them directly,
+# they are not Python packages and must not be picked up by setuptools auto-discovery.
+include = ["lib*"]
+exclude = ["tests*", "scaffold*", "agents*", "skills*", "commands*", "docs*", "hooks*"]
 
 [project.optional-dependencies]
 dev = [
