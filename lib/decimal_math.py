@@ -1,6 +1,7 @@
 """Decimal-only money math helpers.
 
-Floats are forbidden in money math — see test_sum_money_rejects_float.
+Floats are forbidden in money math — every public entry point rejects them
+with TypeError.
 """
 from __future__ import annotations
 
@@ -12,16 +13,15 @@ ZERO = Decimal("0.0000")
 
 
 def to_decimal(value) -> Decimal:
-    """Convert any non-float numeric value to Decimal.
-
-    Floats are accepted but go through str() to avoid binary rounding.
-    """
+    """Convert a non-float numeric value to Decimal. Floats raise TypeError."""
     if value is None:
         return ZERO
     if isinstance(value, Decimal):
         return value
     if isinstance(value, float):
-        return Decimal(str(value))
+        raise TypeError(
+            "float not allowed in money math; pass str(value) or Decimal(str(value))"
+        )
     return Decimal(value)
 
 
@@ -41,13 +41,13 @@ def _reject_float(values: Iterable) -> None:
 
 
 def sum_money(values: Iterable) -> Decimal:
-    """Sum a list of Decimals. Floats raise TypeError."""
+    """Sum Decimals, quantized to MONEY_PLACES. Floats raise TypeError."""
     values = list(values)
     _reject_float(values)
     total = ZERO
     for v in values:
         total += to_decimal(v)
-    return total
+    return total.quantize(MONEY_PLACES, rounding=ROUND_HALF_UP)
 
 
 def pct_of(total, percent) -> Decimal:
@@ -61,17 +61,26 @@ def rebalance(total: Decimal, weights: list[Decimal]) -> list[Decimal]:
     """Split `total` across `weights`, absorbing rounding loss in the last bucket.
 
     The result sums exactly to `total` (after quantize). Useful for tax splits,
-    revenue share, allocation across accounts.
+    revenue share, allocation across accounts. Weights must be non-negative and
+    not all zero.
     """
     _reject_float([total, *weights])
+    if not weights:
+        raise ValueError("weights must not be empty")
+    if any(to_decimal(w) < ZERO for w in weights):
+        raise ValueError("weights must be non-negative")
     weight_total = sum_money(weights)
     if weight_total == ZERO:
         raise ValueError("weights must not all be zero")
+    total_d = to_decimal(total)
     parts: list[Decimal] = []
     for w in weights[:-1]:
-        share = (to_decimal(total) * to_decimal(w) / weight_total).quantize(
+        share = (total_d * to_decimal(w) / weight_total).quantize(
             MONEY_PLACES, rounding=ROUND_HALF_UP
         )
         parts.append(share)
-    parts.append(to_decimal(total) - sum_money(parts))
+    residual = (total_d - sum_money(parts)).quantize(
+        MONEY_PLACES, rounding=ROUND_HALF_UP
+    )
+    parts.append(residual)
     return parts

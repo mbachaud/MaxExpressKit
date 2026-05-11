@@ -3,6 +3,19 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] — 2026-05-11
+
+### Fixed
+
+- `lib.decimal_math.to_decimal` now rejects `float` with `TypeError` (was silently routing through `str(value)`, contradicting the module's "no floats" contract).
+- `lib.decimal_math.sum_money` now quantizes its result to `MONEY_PLACES` on exit — "money in, money out."
+- `lib.decimal_math.rebalance` now:
+  - raises `ValueError("weights must not be empty")` for empty input
+  - raises `ValueError("weights must be non-negative")` for negative weights
+  - quantizes the residual bucket (was carrying excess precision when `total` had > 4 places)
+
+All four fixes surfaced from a dogfood pass: running the new `maxexpresskit:ledger` subagent on `lib/decimal_math.py` itself.
+
 ## [0.1.0] — 2026-05-10
 
 ### Added
