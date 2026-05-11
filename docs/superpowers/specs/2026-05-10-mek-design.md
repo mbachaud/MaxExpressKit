@@ -51,7 +51,7 @@ installable via the Claude Code plugin marketplace, providing:
 | Internal guardrail names | Plain literal: `compliance`, `drift`, `ledger`. |
 | `mek init` scaffold | Standard. `mek.toml` + `compliance/` templates ship by default. Drift baseline + ledger helpers are command-driven. |
 | Hook strictness default | Quiet. Skills nudge; hooks WARN, never block. Users opt-in to hard gates via `mek.toml`. |
-| License | MIT (matches BookKeeper / ScoreRift). |
+| License | Apache 2.0 (matches BookKeeper, which is now public). |
 | Python target | 3.11+. |
 
 ## Architecture
@@ -83,7 +83,7 @@ Layer 1 — **Distilled guardrails** (always available, no source-app deps).
 f:/projects/MaxExpressKit/
 ├── README.md                  # marketing-quality front door
 ├── CHANGELOG.md               # SemVer history
-├── LICENSE                    # MIT
+├── LICENSE                    # Apache 2.0
 ├── plugin.json                # Claude Code plugin manifest
 ├── package.json               # node-side manifest (name/version mirror)
 ├── CODE_OF_CONDUCT.md
