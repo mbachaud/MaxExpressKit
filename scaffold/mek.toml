@@ -1,0 +1,35 @@
+# MaxExpressKit project configuration.
+# See https://github.com/mbachaud/MaxExpressKit/blob/main/docs/concepts.md for the schema.
+
+[mek]
+version = "0.1.0"
+strictness = "warn"  # "off" | "warn" | "block"
+
+[compliance]
+templates_dir = "compliance"
+risky_ops_file = "compliance/RISKY_OPS.yaml"
+staleness_days = 90
+
+[compliance.gates]
+# Values: "off" | "warn" | "block"
+rm_rf = "warn"
+deploy = "warn"
+money_write = "warn"
+schema_migration = "warn"
+force_push_main = "warn"
+
+[drift]
+baseline_file = ".mek/drift-baseline.json"
+preset = "python"
+divergence_threshold = 0.15
+min_confidence = 0.5
+auto_run_on_stop = true
+
+[ledger]
+money_identifier_patterns = ["amount_*", "price_*", "balance_*", "total_*", "cost_*"]
+warn_on_float = true
+
+[source_apps]
+scorerift_path = "auto"
+bookkeeper_path = "auto"
+cosmictasha_url = "auto"
