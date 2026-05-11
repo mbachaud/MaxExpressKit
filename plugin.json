@@ -1,0 +1,11 @@
+{
+  "name": "maxexpresskit",
+  "displayName": "MaxExpressKit",
+  "version": "0.1.0",
+  "description": "Three guardrails for Claude Code: compliance, drift, ledger.",
+  "author": "Max Bachaud",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/mbachaud/MaxExpressKit",
+  "repository": "github:mbachaud/MaxExpressKit",
+  "hooks": "hooks/hooks.json"
+}
