@@ -3,12 +3,13 @@ from __future__ import annotations
 
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 CREATE_NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
 
 
-def _run(cmd: list[str], cwd: Path) -> tuple[int, str]:
+def _run(cmd: list[str], cwd: Path, merge_stderr: bool = True) -> tuple[int, str]:
     p = subprocess.run(
         cmd,
         cwd=str(cwd),
@@ -17,12 +18,14 @@ def _run(cmd: list[str], cwd: Path) -> tuple[int, str]:
         timeout=300,
         creationflags=CREATE_NO_WINDOW,
     )
-    return p.returncode, (p.stdout or "") + (p.stderr or "")
+    if merge_stderr:
+        return p.returncode, (p.stdout or "") + (p.stderr or "")
+    return p.returncode, p.stdout or ""
 
 
 def score_test_pass_rate(project_root: Path) -> tuple[float, float]:
     code, out = _run(
-        ["python", "-m", "pytest", "--no-header", "-q", "--tb=no"], project_root
+        [sys.executable, "-m", "pytest", "--no-header", "-q", "--tb=no"], project_root
     )
     # Look for "N passed, M failed" pattern.
     import re
@@ -49,7 +52,7 @@ def score_lint(project_root: Path) -> tuple[float, float]:
 
 def score_coverage(project_root: Path) -> tuple[float, float]:
     code, out = _run(
-        ["python", "-m", "pytest", "--cov=.", "--cov-report=json", "-q"], project_root
+        [sys.executable, "-m", "pytest", "--cov=.", "--cov-report=json", "-q"], project_root
     )
     cov_file = project_root / "coverage.json"
     if not cov_file.is_file():
@@ -62,14 +65,42 @@ def score_coverage(project_root: Path) -> tuple[float, float]:
         return 0.0, 0.5
 
 
+def score_security(project_root: Path) -> tuple[float, float]:
+    """Run bandit on lib/ and hooks/. Score = 1.0 - (0.5*high + 0.1*medium), floored at 0.
+
+    Returns (0.0, 0.0) if bandit is not installed — same "unmeasured" sentinel
+    the previous stub used. Caller's floor check is skipped via confidence=0.
+    """
+    targets = [str(project_root / d) for d in ("lib", "hooks") if (project_root / d).is_dir()]
+    if not targets:
+        return 0.0, 0.0
+    code, out = _run(
+        [sys.executable, "-m", "bandit", "-r", *targets, "-f", "json", "-q"],
+        project_root,
+        merge_stderr=False,
+    )
+    # bandit returns nonzero when it finds issues; that's not an error from our side.
+    # Real error: empty stdout (module missing) or JSON parse fail.
+    try:
+        data = json.loads(out)
+    except json.JSONDecodeError:
+        return 0.0, 0.0
+    totals = data.get("metrics", {}).get("_totals", {})
+    high = int(totals.get("SEVERITY.HIGH", 0))
+    medium = int(totals.get("SEVERITY.MEDIUM", 0))
+    penalty = 0.5 * high + 0.1 * medium
+    return max(0.0, 1.0 - penalty), 0.9
+
+
 def score_all(project_root: Path) -> dict:
     """Return a dimensions dict ready to drop into a baseline."""
     pass_rate, c1 = score_test_pass_rate(project_root)
     lint, c2 = score_lint(project_root)
     coverage, c3 = score_coverage(project_root)
+    security, c4 = score_security(project_root)
     return {
         "test_pass_rate": {"auto": pass_rate, "manual": None, "confidence": c1, "floor": 0.85},
         "lint_score":     {"auto": lint,      "manual": None, "confidence": c2, "floor": 0.95},
         "coverage":       {"auto": coverage,  "manual": None, "confidence": c3, "floor": 0.70},
-        "security":       {"auto": 0.0,       "manual": None, "confidence": 0.0, "floor": None},
+        "security":       {"auto": security,  "manual": None, "confidence": c4, "floor": 0.70},
     }

@@ -20,9 +20,12 @@ def has_cosmictasha(url: str = CT_DEFAULT_URL) -> dict:
     """Probe CosmicTasha's health endpoint.
 
     Returns {"present": bool, "url": str|None, "version": str|None}.
+    Only http/https URLs are accepted; other schemes (file:, ftp:, etc.) are refused.
     """
+    if not url.startswith(("http://", "https://")):
+        return {"present": False, "url": None, "version": None}
     try:
-        with urllib.request.urlopen(url, timeout=2) as resp:
+        with urllib.request.urlopen(url, timeout=2) as resp:  # nosec B310 (scheme guarded above)
             body = resp.read().decode("utf-8")
             data = json.loads(body) if body else {}
             return {"present": True, "url": url, "version": data.get("version")}

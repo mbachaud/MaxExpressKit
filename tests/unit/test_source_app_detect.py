@@ -44,3 +44,11 @@ def test_has_cosmictasha_handles_error(mock_urlopen):
     assert result["present"] is False
     assert result["url"] is None
     assert result["version"] is None
+
+
+@patch("lib.source_app_detect.urllib.request.urlopen")
+def test_has_cosmictasha_refuses_non_http_schemes(mock_urlopen):
+    # file://, ftp://, etc. must not be probed even if mek.toml provides them.
+    result = has_cosmictasha("file:///etc/passwd")
+    assert result["present"] is False
+    mock_urlopen.assert_not_called()
