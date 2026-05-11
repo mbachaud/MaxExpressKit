@@ -20,7 +20,7 @@ def test_hooks_json_is_valid():
     data = json.loads((PLUGIN_ROOT / "hooks" / "hooks.json").read_text(encoding="utf-8"))
     assert "hooks" in data
     # All hook commands reference scripts that exist.
-    for event, entries in data.get("hooks", {}).items():
+    for _event, entries in data.get("hooks", {}).items():
         for entry in entries:
             for h in entry.get("hooks", []):
                 cmd = h.get("command", "")

@@ -1,7 +1,6 @@
 """Stop hook: if a baseline exists, compute current scores and report divergences."""
 from __future__ import annotations
 
-import json
 import os
 import sys
 from pathlib import Path

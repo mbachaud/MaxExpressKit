@@ -1,7 +1,7 @@
 """Unit tests for lib/drift_scoring/grades.py."""
 import pytest
 
-from lib.drift_scoring.grades import grade_to_float, float_to_grade
+from lib.drift_scoring.grades import float_to_grade, grade_to_float
 
 
 @pytest.mark.parametrize(
