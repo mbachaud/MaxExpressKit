@@ -16,8 +16,18 @@ MEK ships one ambient skill per failure mode, plus matching subagents you can de
 
 ## Install
 
+From GitHub (once the repo is public):
+
 ```bash
-/plugin install mbachaud/MaxExpressKit
+/plugin marketplace add mbachaud/MaxExpressKit
+/plugin install maxexpresskit@mek-marketplace
+```
+
+From a local checkout (for development):
+
+```bash
+/plugin marketplace add /absolute/path/to/MaxExpressKit
+/plugin install maxexpresskit@mek-marketplace
 ```
 
 ## Scaffold a project
@@ -36,7 +46,7 @@ Drops `mek.toml` + `compliance/` templates into the current directory. Then:
 ## The three guardrails
 
 | Guardrail | When it fires | What it does |
-|---|---|---|
+| --- | --- | --- |
 | **compliance** | Before `rm -rf`, deploy, schema migration, money write, force-push | Nudges to record HITL approval; can hard-block via config. |
 | **drift** | After PR-sized work (Stop hook) or `/mek-drift` | Compares auto scores (tests, lint, coverage) against your manual baseline. |
 | **ledger** | When the agent touches `amount_*`, `price_*`, `balance_*` identifiers | Enforces `Decimal`-only math; warns on float-money assignments. |

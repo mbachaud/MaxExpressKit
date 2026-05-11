@@ -1,0 +1,17 @@
+{
+  "name": "mek-marketplace",
+  "version": "0.1.0",
+  "description": "Local marketplace for MaxExpressKit (MEK) — three guardrails for Claude Code.",
+  "owner": {
+    "name": "Max Bachaud",
+    "email": "maxbachaud@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "maxexpresskit",
+      "source": "./",
+      "version": "0.1.0",
+      "description": "Three guardrails for Claude Code: compliance, drift, ledger."
+    }
+  ]
+}

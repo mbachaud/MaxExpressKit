@@ -1,0 +1,8 @@
+{
+  "name": "maxexpresskit",
+  "description": "Three guardrails for Claude Code: compliance, drift, ledger.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Max Bachaud"
+  }
+}

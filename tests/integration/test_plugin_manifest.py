@@ -1,19 +1,29 @@
-"""Sanity checks on plugin.json + hooks/hooks.json."""
+"""Sanity checks on .claude-plugin/plugin.json + hooks/hooks.json."""
 import json
 from pathlib import Path
 
 PLUGIN_ROOT = Path(__file__).resolve().parents[2]
+PLUGIN_MANIFEST = PLUGIN_ROOT / ".claude-plugin" / "plugin.json"
+MARKETPLACE_MANIFEST = PLUGIN_ROOT / ".claude-plugin" / "marketplace.json"
 
 
-def test_plugin_json_exists():
-    assert (PLUGIN_ROOT / "plugin.json").is_file()
+def test_plugin_manifest_exists():
+    assert PLUGIN_MANIFEST.is_file()
 
 
-def test_plugin_json_has_required_fields():
-    data = json.loads((PLUGIN_ROOT / "plugin.json").read_text(encoding="utf-8"))
-    for field in ["name", "version", "description", "license", "hooks"]:
+def test_plugin_manifest_has_required_fields():
+    data = json.loads(PLUGIN_MANIFEST.read_text(encoding="utf-8"))
+    # Required by Claude Code plugin loader.
+    for field in ["name", "description"]:
         assert field in data, f"missing {field}"
-    assert data["license"] == "Apache-2.0"
+    assert data["name"] == "maxexpresskit"
+
+
+def test_marketplace_manifest_lists_plugin():
+    data = json.loads(MARKETPLACE_MANIFEST.read_text(encoding="utf-8"))
+    assert "plugins" in data
+    plugins = data["plugins"]
+    assert any(p["name"] == "maxexpresskit" for p in plugins)
 
 
 def test_hooks_json_is_valid():
