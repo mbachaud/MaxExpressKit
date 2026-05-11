@@ -3,14 +3,14 @@
 Use this when an operation requires Human-In-The-Loop approval.
 
 | Field | Value |
-|---|---|
+| --- | --- |
 | Date (UTC) | YYYY-MM-DDTHH:MMZ |
 | Operator | <name / agent ID> |
 | Approver | <human name + role> |
-| Operation | <category — `rm_rf`, `deploy`, `schema_migration`, `money_write`, `force_push_main`> |
+| Operation | <category — `rm_rf`, `deploy`, `schema_migration`, `money_write`, `force_push_main`, `repo_visibility_flip`> |
 | Target | <file / db / cluster / branch> |
 | Rationale | <one paragraph: what, why, blast radius> |
-| Rollback plan | <how to undo if it goes wrong> |
+| Rollback plan | `how to undo if it goes wrong` |
 | Signed off by | <name + timestamp> |
 
 ## How to use
