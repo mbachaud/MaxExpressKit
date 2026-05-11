@@ -15,6 +15,13 @@ def test_scaffold_has_compliance_templates():
     assert (SCAFFOLD / "compliance" / "RISKY_OPS.yaml").is_file()
 
 
+def test_scaffold_gitignores_approvals_dir():
+    # HITL approvals contain sensitive data — opt-out-shaped privacy default.
+    gi = SCAFFOLD / "compliance" / ".gitignore"
+    assert gi.is_file()
+    assert "approvals/" in gi.read_text(encoding="utf-8")
+
+
 def test_scaffold_mek_toml_parses():
     import sys
     if sys.version_info >= (3, 11):

@@ -1,0 +1,14 @@
+# By default, MEK does NOT track HITL approvals — they frequently contain
+# names, infrastructure details, internal URLs, and other data you probably
+# don't want in git history (especially on public repos).
+#
+# To track a specific approval file explicitly (e.g., after redacting it),
+# add a negation below the `approvals/` line. Example:
+#
+#     approvals/
+#     !approvals/2026-05-11-redacted-public.md
+#
+# Or remove the `approvals/` line entirely if your project's policy is to
+# track all approvals.
+
+approvals/
