@@ -87,7 +87,6 @@ f:/projects/MaxExpressKit/
 ├── plugin.json                # Claude Code plugin manifest
 ├── package.json               # node-side manifest (name/version mirror)
 ├── CODE_OF_CONDUCT.md
-├── GEMINI.md                  # cross-tool support manifest
 ├── agents/
 │   ├── compliance.md
 │   ├── drift.md
@@ -98,12 +97,12 @@ f:/projects/MaxExpressKit/
 │   ├── drift/SKILL.md
 │   └── ledger/SKILL.md
 ├── commands/
-│   ├── mek-init.md
-│   ├── mek-status.md
-│   ├── mek-drift.md
-│   ├── mek-compliance-audit.md
-│   ├── mek-books.md           # wrapper to bookkeeper CLI
-│   └── mek-soc2.md            # wrapper to CosmicTasha
+│   ├── mek-init.md            # scaffold a project (Layer 3)
+│   ├── mek-status.md          # show active guardrails + source-app detection
+│   ├── mek-drift.md           # run drift check on demand
+│   ├── mek-compliance-audit.md# audit existing compliance artifacts for staleness
+│   ├── mek-books.md           # wrapper to bookkeeper CLI (Layer 2; stub-only in v0.1.0)
+│   └── mek-soc2.md            # wrapper to CosmicTasha    (Layer 2; stub-only in v0.1.0)
 ├── hooks/
 │   ├── hooks.json             # wires PreToolUse + Stop hooks
 │   └── scripts/
@@ -195,6 +194,90 @@ Wrappers call these and degrade gracefully: if absent, fall back to the
 distilled Layer 1; if present, defer to the richer source app and pipe
 results back through the skill surface.
 
+### Layer 2 wrapper policy for v0.1.0
+
+The three wrapper commands (`mek-books`, `mek-soc2`, plus the source-app
+branch inside `mek-drift`) ship as **stubs** in v0.1.0:
+
+- Stub behavior: invoke detection; if source app absent, print a one-line
+  "this command lights up when `<app>` is installed — see docs" and exit 0.
+  If source app present, print "detected `<app>` at `<version>`; full
+  integration ships in v0.2.0" and exit 0.
+- The stubs guarantee the commands exist for discovery (`/help`, plugin
+  listing) and that the detection helpers are exercised in tests.
+- Full pass-through to source-app CLIs is a v0.2.0 deliverable.
+
+This keeps v0.1.0 publishable without requiring source-app installs on CI.
+
+## Schemas
+
+### `mek.toml`
+
+Default ships in `scaffold/mek.toml`. All sections optional; defaults below.
+
+```toml
+[mek]
+version = "0.1.0"
+strictness = "warn"             # "off" | "warn" | "block"
+
+[compliance]
+templates_dir = "compliance"
+risky_ops_file = "compliance/RISKY_OPS.yaml"
+
+[compliance.gates]
+# Per-op escalation. Values: "off" | "warn" | "block".
+# Keys map to op IDs emitted by hooks/scripts/pre_risky_op.py.
+rm_rf = "warn"
+deploy = "warn"
+money_write = "warn"
+schema_migration = "warn"
+force_push_main = "warn"
+
+[drift]
+baseline_file = ".mek/drift-baseline.json"
+preset = "python"               # "python" only at v0.1.0
+divergence_threshold = 0.15
+min_confidence = 0.5
+auto_run_on_stop = true         # Stop-hook auto-trigger after meaningful work
+
+[ledger]
+money_identifier_patterns = ["amount_*", "price_*", "balance_*", "total_*", "cost_*"]
+warn_on_float = true
+
+[source_apps]
+scorerift_path = "auto"         # "auto" | path | "disabled"
+bookkeeper_path = "auto"
+cosmictasha_url = "auto"        # "auto" probes localhost:3000/api/health
+```
+
+### `.mek/drift-baseline.json`
+
+Persists last-known scores per dimension. Written by `/mek-drift init` and
+updated by `/mek-drift accept`. Schema:
+
+```json
+{
+  "schema_version": "1.0",
+  "updated_at": "2026-05-10T22:01:00Z",
+  "preset": "python",
+  "dimensions": {
+    "test_pass_rate":  { "auto": 0.93, "manual": null, "confidence": 1.0, "floor": 0.85 },
+    "lint_score":      { "auto": 1.00, "manual": null, "confidence": 1.0, "floor": 0.95 },
+    "coverage":        { "auto": 0.78, "manual": null, "confidence": 0.9, "floor": 0.70 },
+    "security":        { "auto": 0.85, "manual": "A+", "confidence": 0.8, "floor": null }
+  }
+}
+```
+
+Field semantics:
+
+- `auto` — float in `[0, 1]`, computed by `lib/drift_scoring`.
+- `manual` — letter grade ("A+", "B-", …) or `null` if not yet set by user.
+- `confidence` — float in `[0, 1]`; divergence is only flagged when ≥ `min_confidence`.
+- `floor` — optional ratchet; `auto` below `floor` → flagged regardless of divergence.
+
+Divergence rule (ScoreRift-compatible): flag when `|auto - manual_as_float| > divergence_threshold` AND `confidence ≥ min_confidence`. Letter-grade → float mapping ships in `lib/drift_scoring/grades.py`.
+
 ## Verification plan
 
 1. `MaxExpressKit/` builds as a Claude Code plugin (`/plugin install ./MaxExpressKit`).
@@ -248,16 +331,22 @@ needed; Layer 1 is the publishable MVP.
 ## Out of scope for v0.1.0
 
 - Ledger companion (mini-SQLite ledger) — stubbed only.
+- Full Layer 2 wrappers — `mek-books` and `mek-soc2` ship as stubs; full
+  pass-through to source-app CLIs is v0.2.0.
 - CosmicTasha web/API detection beyond a localhost probe — full integration
-  is a v0.2 deliverable since CT runs as a service, not a CLI.
+  is a v0.2.0 deliverable since CT runs as a service, not a CLI.
 - Multi-language ledger helpers (TypeScript port) — Python only at v0.1.0.
-- Pre-commit hook integration — opt-in for v0.2.
+- Multi-language drift presets — Python preset only; JS/Go/Rust presets v0.2.0.
+- Pre-commit hook integration — opt-in for v0.2.0.
+- Gemini CLI cross-tool manifest (`GEMINI.md`) — v0.2.0 once Claude Code
+  surface is settled.
+- Telemetry — no usage telemetry in v0.1.0. Noise-suppression is config-driven.
 
 ## Risks & mitigations
 
 | Risk | Mitigation |
 | --- | --- |
-| Compliance nudges become noisy → users mute the plugin | Quiet-default + per-op suppression in `mek.toml`; track noise via opt-in telemetry. |
+| Compliance nudges become noisy → users mute the plugin | Quiet-default + per-op suppression in `mek.toml`. |
 | Drift auto-scorers wrong for non-Python repos | Ship Python preset only at v0.1.0; document presets for JS/Go/Rust as v0.2. |
 | `lib/decimal_math.py` drifts from BookKeeper source | Add a doctest cross-check; periodic sync note in CHANGELOG. |
 | Plugin name conflicts on marketplace | Check name availability before public push; have backup `mek-guardrails` ready. |
