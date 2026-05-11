@@ -1,0 +1,19 @@
+# Project-specific risky-op overrides.
+# Add identifiers / file patterns that should escalate to your project's
+# compliance category even when the built-in classifier doesn't catch them.
+
+money_write:
+  files:
+    - "src/billing/**"
+    - "src/payments/**"
+
+deploy:
+  files:
+    - "deploy/**"
+    - "k8s/**"
+    - "terraform/**"
+
+schema_migration:
+  files:
+    - "migrations/**"
+    - "alembic/versions/**"
