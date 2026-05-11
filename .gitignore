@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+coverage.json
+
+# Node
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+
+# MEK artifacts
+.mek/
+*.local.toml
+
+# OS
+.DS_Store
+Thumbs.db
