@@ -39,12 +39,20 @@ def score_test_pass_rate(project_root: Path) -> tuple[float, float]:
 
 
 def score_lint(project_root: Path) -> tuple[float, float]:
-    code, out = _run(["ruff", "check", "."], project_root)
-    if code == 0:
+    """Run ruff. Returns the unmeasured sentinel (0.0, 0.0) if ruff isn't
+    installed or its output couldn't be parsed — so callers don't mistake
+    a launch failure for a clean repo.
+    """
+    code, out = _run([sys.executable, "-m", "ruff", "check", "."], project_root)
+    # Discriminate "ruff actually ran" by looking for one of its expected
+    # output markers. If neither appears, we have no real measurement.
+    if "All checks passed" in out:
         return 1.0, 1.0
     import re
     m = re.search(r"Found (\d+) error", out)
-    errors = int(m.group(1)) if m else 1
+    if not m:
+        return 0.0, 0.0  # unmeasured — same sentinel as score_security
+    errors = int(m.group(1))
     # Heuristic: 0 errors = 1.0, 100+ errors = 0.0, linear in between.
     score = max(0.0, 1.0 - errors / 100.0)
     return score, 1.0

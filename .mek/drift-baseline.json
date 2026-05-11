@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-11T07:50:48.679821+00:00",
+  "updated_at": "2026-05-11T16:58:45.390223+00:00",
   "preset": "python",
   "dimensions": {
     "test_pass_rate": {
@@ -16,7 +16,7 @@
       "floor": 0.95
     },
     "coverage": {
-      "auto": 0.757201646090535,
+      "auto": 0.8320000000000001,
       "manual": null,
       "confidence": 0.9,
       "floor": 0.7

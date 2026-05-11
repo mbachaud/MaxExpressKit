@@ -3,6 +3,23 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.3] — 2026-05-11
+
+### Fixed
+
+- **`score_lint` confidence honesty** — when `ruff` couldn't be launched or its output couldn't be parsed, the scorer previously returned `(0.99, 1.0)`, claiming high confidence in fabricated data. Now returns the same `(0.0, 0.0)` "unmeasured" sentinel as `score_security`. Also switched the invocation from bare `"ruff"` to `[sys.executable, "-m", "ruff", ...]` for the same PATH-resolution reasons we hit in v0.1.2 for the other scorers.
+
+### Added
+
+- **Privacy default for HITL approvals** — `/mek-init` now drops a `compliance/.gitignore` that ignores `approvals/` by default. HITL records often carry names, infra details, and rationale that don't belong in public git history. Add `!approvals/<file>` negations to opt specific (redacted) approvals into tracking.
+- **`/mek-compliance-audit` privacy check** — surfaces files tracked under `compliance/approvals/` as a warning. `--strict` fails the audit when any such file exists.
+- **`docs/compliance.md` hardening section** — documents both the static-block pattern (`repo_visibility_flip = "block"` in mek.toml) and a conditional-block recipe for projects that want visibility flips to fail only when approvals exist on disk.
+
+### Tests
+
+- 4 new unit tests on the lint sentinel (`tests/unit/test_drift_python_preset.py`).
+- 1 new integration test that the scaffold ships `compliance/.gitignore`.
+
 ## [0.1.2] — 2026-05-11
 
 ### Added
