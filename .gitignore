@@ -16,7 +16,8 @@ node_modules/
 .idea/
 
 # MEK artifacts
-.mek/
+.mek/*
+!.mek/drift-baseline.json
 *.local.toml
 
 # OS

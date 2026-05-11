@@ -3,6 +3,23 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.2] — 2026-05-11
+
+### Added
+
+- **`repo_visibility_flip` risky-op category** — the compliance classifier now matches `gh repo edit <repo> --visibility (public|internal)`. This kind of action is effectively irreversible due to search-index/Wayback caching, so it deserves the same HITL nudge as `force_push_main`. Default gate is `warn`.
+- **Real `score_security` in the python drift preset** — `bandit` runs against `lib/` and `hooks/`. Medium severity costs 0.1, high costs 0.5. Previously a silent no-op stub (`auto=0.0, confidence=0.0`).
+- **`.mek/drift-baseline.json` seeded for MEK itself** — checked in. Manual grades left null so users can hand-grade later; current auto-scores: tests=1.0, lint=1.0, coverage=0.76, security=1.0.
+
+### Fixed
+
+- `lib/source_app_detect.has_cosmictasha` now refuses non-http/https URLs (bandit B310). Previously `file://` and other schemes would have been accepted.
+- `lib/drift_scoring/python_preset.py` now uses `sys.executable` instead of literal `"python"` when spawning subprocesses — fixes the case where `PATH` resolves `python` to a different interpreter than the one running MEK.
+
+### Dependencies
+
+- New dev dep: `bandit>=1.7`. CI install via `pip install -e ".[dev]"` already covers it.
+
 ## [0.1.1] — 2026-05-11
 
 ### Fixed

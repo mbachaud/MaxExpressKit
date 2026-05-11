@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-05-11T07:50:48.679821+00:00",
+  "preset": "python",
+  "dimensions": {
+    "test_pass_rate": {
+      "auto": 1.0,
+      "manual": null,
+      "confidence": 1.0,
+      "floor": 0.85
+    },
+    "lint_score": {
+      "auto": 1.0,
+      "manual": null,
+      "confidence": 1.0,
+      "floor": 0.95
+    },
+    "coverage": {
+      "auto": 0.757201646090535,
+      "manual": null,
+      "confidence": 0.9,
+      "floor": 0.7
+    },
+    "security": {
+      "auto": 1.0,
+      "manual": null,
+      "confidence": 0.9,
+      "floor": 0.7
+    }
+  }
+}
